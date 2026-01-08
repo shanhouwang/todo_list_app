@@ -13,6 +13,7 @@ class TodoItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 完成时文本变暗并加删除线。
     final textStyle = Theme.of(context).textTheme.titleMedium?.copyWith(
           decoration: todo.completed ? TextDecoration.lineThrough : null,
           color: todo.completed
@@ -25,7 +26,7 @@ class TodoItem extends StatelessWidget {
         leading: Checkbox(value: todo.completed, onChanged: onChanged),
         title: Text(todo.title, style: textStyle),
         subtitle: todo.id == null
-            ? const Text('Local item')
+            ? const Text('Local item') // 还没有服务端 id。
             : Text('Remote #${todo.id}'),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       ),

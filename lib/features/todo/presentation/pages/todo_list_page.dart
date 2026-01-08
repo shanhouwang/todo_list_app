@@ -9,7 +9,9 @@ class TodoListPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // 监听状态，todos 变化时触发重建。
     final state = ref.watch(todoNotifierProvider);
+    // 读取 notifier 以执行加载、添加、切换等操作。
     final notifier = ref.read(todoNotifierProvider.notifier);
 
     return Scaffold(
@@ -41,14 +43,17 @@ class TodoListPage extends ConsumerWidget {
     TodoNotifier notifier,
   ) {
     if (state.isLoading && state.todos.isEmpty) {
+      // 首次加载：没有数据时显示加载指示器。
       return const Center(child: CircularProgressIndicator());
     }
 
     if (state.errorMessage != null && state.todos.isEmpty) {
+      // 错误且无数据：显示重试界面。
       return _ErrorView(onRetry: notifier.loadTodos);
     }
 
     return RefreshIndicator(
+      // 下拉刷新触发重新拉取网络数据。
       onRefresh: notifier.loadTodos,
       child: ListView.separated(
         padding: const EdgeInsets.all(16),
@@ -60,6 +65,7 @@ class TodoListPage extends ConsumerWidget {
           return TodoItem(
             todo: todo,
             onChanged: (value) {
+              // 复选框切换本地完成状态。
               notifier.toggleTodo(index, value ?? false);
             },
           );
@@ -72,6 +78,7 @@ class TodoListPage extends ConsumerWidget {
     final controller = TextEditingController();
     final formKey = GlobalKey<FormState>();
 
+    // showDialog 返回的 Future 在对话框关闭时完成。
     final result = await showDialog<String>(
       context: context,
       builder: (dialogContext) {

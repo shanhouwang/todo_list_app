@@ -1,3 +1,4 @@
+// 领域实体，表示应用中的待办项。
 class Todo {
   const Todo({
     required this.title,

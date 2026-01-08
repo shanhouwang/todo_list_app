@@ -1,5 +1,6 @@
 import 'package:todo_list_app/features/todo/domain/entities/todo.dart';
 
+// 数据层模型，提供 JSON 解析/序列化，并继承领域实体。
 class TodoModel extends Todo {
   const TodoModel({
     required super.title,
@@ -23,6 +24,7 @@ class TodoModel extends Todo {
     };
   }
 
+  // 转换为应用内部使用的领域实体。
   Todo toEntity() {
     return Todo(id: id, title: title, completed: completed);
   }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+// 应用主题配置的集中入口。
 class AppTheme {
   static ThemeData light() {
     const seedColor = Color(0xFF0F4C5C);
