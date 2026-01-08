@@ -4,6 +4,12 @@ import 'package:todo_list_app/features/todo/presentation/state/todo_notifier.dar
 import 'package:todo_list_app/features/todo/presentation/state/todo_state.dart';
 import 'package:todo_list_app/features/todo/presentation/widgets/todo_item.dart';
 
+/*
+ * Widget 负责“设计图：ui描述”，Element 负责“施工队：管理/绑定”，RenderObject 负责“画/渲染：真正干活画画的”
+ * Widget 树：在 build() 里“写出来”，属于你的项目代
+ * Element 树：运行时自动生成，不在 lib/，在 Flutter 框架内部
+ * RenderObject 树：运行时自动生成，不在 lib/，在 Flutter 框架内部
+ */
 class TodoListPage extends ConsumerWidget {
   const TodoListPage({super.key});
 
