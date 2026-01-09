@@ -1,35 +1,42 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:todo_list_app/core/network/api_client.dart';
+import 'package:todo_list_app/features/todo/data/datasources/todo_remote_data_source.dart';
+import 'package:todo_list_app/features/todo/data/repositories/todo_repository_impl.dart';
+import 'package:todo_list_app/features/todo/domain/entities/todo.dart';
+import 'package:todo_list_app/features/todo/domain/repositories/todo_repository.dart';
 import 'package:todo_list_app/features/todo/domain/usecases/create_todo.dart';
 import 'package:todo_list_app/features/todo/domain/usecases/get_todos.dart';
 import 'package:todo_list_app/features/todo/presentation/state/todo_state.dart';
 
-class TodoNotifier extends StateNotifier<TodoState> {
-  TodoNotifier({
-    required this.getTodos,
-    required this.createTodo,
-  }) : super(const TodoState()) {
-    // Notifier 创建时触发首次加载。
+// 示例方案 3：在 Notifier 内部直接创建依赖。
+class SimpleTodoNotifier extends StateNotifier<TodoState> {
+  SimpleTodoNotifier()
+      : _client = ApiClient(),
+        super(const TodoState()) {
+    _remoteDataSource = TodoRemoteDataSource(_client);
+    _repository = TodoRepositoryImpl(_remoteDataSource);
+    _getTodos = GetTodos(_repository);
+    _createTodo = CreateTodo(_repository);
     loadTodos();
   }
 
-  final GetTodos getTodos;
-  final CreateTodo createTodo;
+  final ApiClient _client;
+  late final TodoRemoteDataSource _remoteDataSource;
+  late final TodoRepository _repository;
+  late final GetTodos _getTodos;
+  late final CreateTodo _createTodo;
 
-  // 加载远程列表：用于首次进入页面和下拉刷新。
   Future<void> loadTodos() async {
-    // 更新状态：显示加载中并清空错误。
     state = state.copyWith(isLoading: true, errorMessage: null);
 
     try {
-      // 调用用例拉取数据（最终会走到网络层）。
-      final todos = await getTodos();
+      final todos = await _getTodos();
       state = state.copyWith(
         isLoading: false,
         todos: todos,
         errorMessage: null,
       );
     } catch (error) {
-      // 保留可读的错误信息给 UI。
       state = state.copyWith(
         isLoading: false,
         errorMessage: error.toString(),
@@ -37,27 +44,21 @@ class TodoNotifier extends StateNotifier<TodoState> {
     }
   }
 
-  // 新增待办：用于弹窗提交按钮。
   Future<void> addTodo(String title) async {
-    // 简单校验，避免提交空内容。
     if (title.trim().isEmpty) {
       return;
     }
 
-    // 标记提交中状态，便于 UI 禁用输入。
     state = state.copyWith(isSubmitting: true, errorMessage: null);
 
     try {
-      // 调用用例创建数据（最终会走到网络层）。
-      final todo = await createTodo(title.trim());
+      final todo = await _createTodo(title.trim());
       state = state.copyWith(
         isSubmitting: false,
-        // 新条目放到列表顶部。
         todos: [todo, ...state.todos],
         errorMessage: null,
       );
     } catch (error) {
-      // 提交失败时显示错误信息。
       state = state.copyWith(
         isSubmitting: false,
         errorMessage: error.toString(),
@@ -65,12 +66,19 @@ class TodoNotifier extends StateNotifier<TodoState> {
     }
   }
 
-  // 切换完成状态：只更新本地列表（示例中不走网络）。
   void toggleTodo(int index, bool value) {
-    // 复制列表以保持状态不可变。
     final updated = [...state.todos];
     final todo = updated[index];
     updated[index] = todo.copyWith(completed: value);
     state = state.copyWith(todos: updated, errorMessage: state.errorMessage);
   }
+
+  void close() => _client.dispose();
 }
+
+final simpleTodoNotifierProviderVariant3 =
+    StateNotifierProvider<SimpleTodoNotifier, TodoState>((ref) {
+  final notifier = SimpleTodoNotifier();
+  ref.onDispose(notifier.close);
+  return notifier;
+});

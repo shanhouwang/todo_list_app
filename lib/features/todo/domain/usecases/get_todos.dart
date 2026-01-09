@@ -7,5 +7,6 @@ class GetTodos {
 
   final TodoRepository repository;
 
+  // Dart 的 call 语法让实例像函数一样被调用：getTodos() 等同于 getTodos.call()。
   Future<List<Todo>> call() => repository.getTodos();
 }
